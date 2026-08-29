@@ -1,0 +1,92 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Source {
+  id        String    @id @default(uuid())
+  name      String
+  url       String
+  type      String    // "API", "RSS"
+  category  String    // "General", "AI", "Startup", "Local", etc.
+  language  String    @default("en")
+  country   String    @default("in")
+  articles  Article[]
+}
+
+model Article {
+  id               String   @id @default(uuid())
+  title            String
+  description      String?
+  content          String?
+  url              String   @unique
+  urlToImage       String?
+  publishedAt      DateTime
+  publishedIstDate String   // Format: YYYY-MM-DD
+  author           String?
+  sourceId         String?
+  source           Source?  @relation(fields: [sourceId], references: [id])
+  storyId          String?
+  story            Story?   @relation(fields: [storyId], references: [id], onDelete: SetNull)
+  createdAt        DateTime @default(now())
+}
+
+model Story {
+  id                 String          @id @default(uuid())
+  title              String
+  summary            String
+  credibilityScore   String          // "VERIFIED", "UNVERIFIED", "DISPUTED"
+  primaryCategory    String
+  secondaryCategory  String?
+  isDeveloping       Boolean         @default(false)
+  embedding          String?         // Serialized float array [0.12, -0.45, ...]
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  articles           Article[]
+  claims             Claim[]
+  timelines          StoryTimeline[]
+  diffs              StoryDiff[]
+}
+
+model Claim {
+  id           String   @id @default(uuid())
+  storyId      String
+  story        Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  claimText    String
+  status       String   // "CORROBORATED", "SINGLE_SOURCE", "DISPUTED"
+  sourcesCount Int      @default(1)
+  createdAt    DateTime @default(now())
+}
+
+model StoryTimeline {
+  id               String   @id @default(uuid())
+  storyId          String
+  story            Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  eventTime        DateTime
+  eventTitle       String
+  eventDescription String
+  sourceUrl        String?
+  createdAt        DateTime @default(now())
+}
+
+model StoryDiff {
+  id          String   @id @default(uuid())
+  storyId     String
+  story       Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  diffDate    String   // Format: YYYY-MM-DD
+  diffContent String
+  createdAt   DateTime @default(now())
+}
+
+model UserPreference {
+  id                String   @id @default(uuid())
+  deviceId          String   @unique
+  categoryInterests String   // JSON string of category weights: { "Politics": 1.2, "Sports": 0.5 }
+  savedStories      String   // JSON array of story IDs: ["story-uuid-1", "story-uuid-2"]
+  lastActive        DateTime @default(now())
+  createdAt         DateTime @default(now())
+}

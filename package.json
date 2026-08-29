@@ -1,0 +1,20 @@
+{
+  "name": "ai-news-aggregator-root",
+  "version": "1.0.0",
+  "description": "Root workspace runner for the AI News Aggregator application",
+  "scripts": {
+    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev": "npx concurrently -n backend,frontend \"cd backend && npm run dev\" \"cd frontend && npx rimraf .next && npm run dev\"",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "build": "cd backend && npm run build && cd frontend && npm run build",
+    "db:push": "cd backend && npm run db:push",
+    "prisma:generate": "cd backend && npm run prisma:generate",
+    "test": "cd backend && npm run test"
+  },
+  "dependencies": {
+    "concurrently": "^10.0.3"
+  }
+}

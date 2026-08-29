@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8fafc;
+  /* Slate 50 */
+  --foreground: #0f172a;
+  /* Slate 900 */
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --border: #e2e8f0;
+  /* Slate 200 */
+  --border-focus: #cbd5e1;
+  /* Slate 300 */
+  --muted: #64748b;
+  /* Slate 500 */
+  --muted-light: #f1f5f9;
+  /* Slate 100 */
+  --primary: #2563eb;
+  /* Blue 600 */
+  --primary-hover: #1d4ed8;
+  /* Blue 700 */
+  --accent: #f59e0b;
+  /* Amber 500 */
+
+  --credibility-verified: #10b981;
+  /* Emerald 500 */
+  --credibility-unverified: #64748b;
+  /* Slate 500 */
+  --credibility-disputed: #ef4444;
+  /* Red 500 */
+}
+
+.dark {
+  --background: #0b0f19;
+  /* Custom dark deep blue-gray */
+  --foreground: #f1f5f9;
+  /* Slate 100 */
+  --card: #151d30;
+  /* Custom slate blue-gray */
+  --card-foreground: #f1f5f9;
+  --border: #222f47;
+  /* Slate 700ish */
+  --border-focus: #334464;
+  --muted: #94a3b8;
+  /* Slate 400 */
+  --muted-light: #1e293b;
+  /* Slate 800 */
+  --primary: #3b82f6;
+  /* Blue 500 */
+  --primary-hover: #60a5fa;
+  /* Blue 400 */
+  --accent: #fbbf24;
+  /* Amber 400 */
+
+  --credibility-verified: #34d399;
+  /* Emerald 400 */
+  --credibility-unverified: #94a3b8;
+  /* Slate 400 */
+  --credibility-disputed: #f87171;
+  /* Red 400 */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-border-focus: var(--border-focus);
+  --color-muted: var(--muted);
+  --color-muted-light: var(--muted-light);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-accent: var(--accent);
+
+  --color-verified: var(--credibility-verified);
+  --color-unverified: var(--credibility-unverified);
+  --color-disputed: var(--credibility-disputed);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Custom Scrollbar for sleek horizontal scrollbars */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Premium Preloader Styles (inspired by yzavoku.com) */
+#Preloader {
+  align-items: center;
+  background-color: #0b0f19; /* High-end dark theme background */
+  bottom: 0;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  justify-content: center;
+  left: 0;
+  letter-spacing: 0.15em;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 9999;
+}
+
+/* While preloader is present, hide body scrollbar */
+body:has(#Preloader) {
+  overflow: hidden;
+}
+
+/* Simple Logo Preloader Styles */
+#Preloader .circle-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+#Preloader .animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.85;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
