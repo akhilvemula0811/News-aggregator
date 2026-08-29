@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        - DB_PROVIDER=${DB_PROVIDER:-sqlite}
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+      - ADMIN_SECRET=${ADMIN_SECRET:-super_secret_admin_token_123}
+      - DATABASE_URL=${DATABASE_URL:-file:./dev.db}
+      - DB_PROVIDER=${DB_PROVIDER:-sqlite}
+      - REDIS_URL=${REDIS_URL}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - NEWS_API_KEY=${NEWS_API_KEY}
+      - CURRENTS_API_KEY=${CURRENTS_API_KEY}
+    volumes:
+      - backend-db:/app/backend/prisma
+    restart: always
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:5000/api}
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:5000/api}
+    restart: always
+    depends_on:
+      - backend
+
+volumes:
+  backend-db:

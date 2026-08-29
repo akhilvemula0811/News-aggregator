@@ -142,27 +142,84 @@ Your tasks are:
 
 ---
 
-## 🗄️ Database & PostgreSQL Production Deployment
+## 🚢 Deployment & Production Setup
 
-### Local SQLite to PostgreSQL Shift
-The application uses Prisma Client. To switch the database provider from SQLite to PostgreSQL for Render/Railway deployment:
-1. In `backend/prisma/schema.prisma`, update the datasource block:
-   ```prisma
-   datasource db {
-     provider = "postgresql"
-     url      = env("DATABASE_URL")
-   }
-   ```
-2. Update the `DATABASE_URL` in `.env` to point to your PostgreSQL database cluster:
+This project is set up with multi-stage Docker configurations, dynamic database switching, and environment validation.
+
+### 1. Dynamic Database Provider Switching (SQLite vs PostgreSQL)
+The project automatically configures the Prisma database provider based on the `DB_PROVIDER` environment variable during builds or migrations.
+- **SQLite (Default)**: Set `DB_PROVIDER=sqlite` and `DATABASE_URL="file:./dev.db"`.
+- **PostgreSQL**: Set `DB_PROVIDER=postgresql` and `DATABASE_URL="postgresql://username:password@hostname:5432/dbname"`.
+
+The build pipelines run the `prepare-db.js` helper script internally to switch the schema dynamically before generating Prisma client models.
+
+---
+
+### 2. Containerized Deployment (Docker Compose)
+You can deploy both frontend and backend services simultaneously using Docker Compose:
+
+1. **Configure Environment Variables**:
+   Create a `.env` in the root workspace (or configure your hosting provider dashboard):
    ```env
-   DATABASE_URL="postgresql://username:password@hostname:5432/dbname"
+   # Database & Secrets
+   DB_PROVIDER=sqlite
+   DATABASE_URL=file:./dev.db
+   ADMIN_SECRET=your_production_secret
+
+   # AI & Ingestion Keys
+   GEMINI_API_KEY=your_gemini_api_key
+   NEWS_API_KEY=your_newsapi_key
+   CURRENTS_API_KEY=your_currents_key
+
+   # API Routing
+   NEXT_PUBLIC_API_URL=http://your-server-ip-or-domain:5000/api
    ```
-3. Run the migrations generator:
+
+2. **Build and Run Containers**:
    ```bash
-   npx prisma migrate dev --name init-postgres
+   docker compose build --build-arg NEXT_PUBLIC_API_URL=http://your-server-ip-or-domain:5000/api
+   docker compose up -d
    ```
-4. Re-generate the client:
-   ```bash
-   npx prisma generate
-   ```
-   The backend code handles the SQL dialect differences transparently.
+
+The backend container will automatically run database sync (`prisma db push`) at startup.
+
+---
+
+### 3. Cloud Deployment (Render & Vercel)
+
+We recommend deploying the backend Express API & PostgreSQL database to **Render**, and the frontend Next.js application to **Vercel**.
+
+#### 🅰️ Backend & PostgreSQL Database (Render Blueprint)
+We have configured a [`render.yaml`](file:///c:/ai-news/render.yaml) Blueprint. To deploy the backend infrastructure:
+
+1. Push your repository to **GitHub** or **GitLab**.
+2. Go to the **[Render Dashboard](https://dashboard.render.com)**.
+3. Click **New +** and select **Blueprint**.
+4. Connect your repository. Render will automatically detect the `render.yaml` configuration.
+5. In the configuration page, fill in the required environment variables:
+   - `GEMINI_API_KEY`: Your Google Gemini API Key.
+   - `NEWS_API_KEY`: Your NewsAPI.org API Key.
+   - `CURRENTS_API_KEY`: Your Currents API Key.
+6. Click **Approve**. Render will provision:
+   - A managed PostgreSQL instance (`ai-news-db`).
+   - A Node Docker container running the Express API (`ai-news-backend`).
+   - Database tables automatically synchronized on container boot via `prisma db push`.
+
+#### 🅱️ Frontend Next.js App (Vercel)
+Deploying the frontend Next.js app to Vercel is extremely straightforward:
+
+1. Go to the **[Vercel Dashboard](https://vercel.com)**.
+2. Click **Add New** and select **Project**.
+3. Import your Git repository.
+4. On the configuration screen:
+   - Set **Framework Preset**: `Next.js`.
+   - Set **Root Directory**: `frontend` (Important: do not deploy from the workspace root).
+   - In the **Environment Variables** section, add:
+     - `NEXT_PUBLIC_API_URL`: The URL of your deployed Render backend (e.g. `https://ai-news-backend.onrender.com/api`).
+5. Click **Deploy**. Vercel will build, optimize, and serve your frontend.
+
+> [!TIP]
+> **Cron Scheduler in Serverless/Free Tiers**:
+> If deploying the backend to serverless functions or container environments that sleep when idle (like Render free tier), the in-memory `node-cron` schedule will not trigger consistently.
+> To ensure the 24h news refresh runs reliably, set up an external HTTP cron trigger (e.g. using Vercel Cron, GitHub Actions schedules, or Cron-Job.org) targeting:
+> `POST https://your-backend-domain.com/api/admin/ingest` with the header `x-admin-secret` matching your configured `ADMIN_SECRET`.

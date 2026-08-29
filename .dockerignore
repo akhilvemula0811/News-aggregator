@@ -1,0 +1,20 @@
+# Node
+node_modules
+npm-debug.log
+
+# Next.js build
+frontend/.next
+frontend/out
+frontend/tsconfig.tsbuildinfo
+
+# Backend build & local db
+backend/dist
+backend/prisma/dev.db
+backend/prisma/dev.db-journal
+
+# VS Code & OS files
+.vscode
+.git
+.gitignore
+.DS_Store
+*.log

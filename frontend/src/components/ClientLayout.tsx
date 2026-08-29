@@ -330,7 +330,10 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
       {/* DESKTOP SIDEBAR */}
       <aside className="hidden md:flex flex-col w-64 border-r border-border bg-card p-6 fixed h-full z-10">
         {/* Logo */}
-        <div className="flex items-center gap-2 mb-8 select-none">
+        <div
+          onClick={() => window.location.reload()}
+          className="flex items-center gap-2 mb-8 select-none cursor-pointer hover:opacity-80 transition-opacity"
+        >
           <Image
             src={newsLogo}
             alt="AI News Pulse Logo"
@@ -392,7 +395,10 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
         {/* HEADER */}
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border bg-card/85 backdrop-blur-md px-4 sm:px-6">
           {/* Mobile logo */}
-          <div className="flex items-center gap-1.5 sm:gap-2 md:hidden select-none">
+          <div
+            onClick={() => window.location.reload()}
+            className="flex items-center gap-1.5 sm:gap-2 md:hidden select-none cursor-pointer hover:opacity-80 transition-opacity"
+          >
             <Image
               src={newsLogo}
               alt="AI News Pulse Logo"
