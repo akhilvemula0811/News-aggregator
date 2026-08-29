@@ -28,4 +28,4 @@ services:
 databases:
   - name: ai-news-db
     plan: free
-    postgresVersion: "15"
+    postgresMajorVersion: "15"
