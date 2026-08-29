@@ -7,7 +7,7 @@ services:
     plan: free
     envVars:
       - key: PORT
-        value: 5000
+        value: "5000"
       - key: NODE_ENV
         value: production
       - key: DB_PROVIDER
@@ -28,4 +28,4 @@ services:
 databases:
   - name: ai-news-db
     plan: free
-    postgresVersion: 15
+    postgresVersion: "15"
