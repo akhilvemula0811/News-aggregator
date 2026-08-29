@@ -250,21 +250,23 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
 
   const handleManualIngest = async () => {
     setIngesting(true);
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000/api';
+    const adminSecret = process.env.NEXT_PUBLIC_ADMIN_SECRET || 'super_secret_admin_token_123';
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/admin/ingest', {
+      const res = await fetch(`${apiBase}/admin/ingest`, {
         method: 'POST',
         headers: {
-          'x-admin-secret': 'super_secret_admin_token_123'
+          'x-admin-secret': adminSecret
         }
       });
       if (res.ok) {
         alert(t('Ingestion triggered successfully! Feed is updating...', currentLanguage));
         window.location.reload();
       } else {
-        alert(t('Ingestion trigger failed. Make sure Express server is running locally on port 5000.', currentLanguage));
+        alert(t('Ingestion trigger failed. Check your API endpoint and admin secret configuration.', currentLanguage));
       }
     } catch (err) {
-      alert(t('Network error trying to contact backend ingestion server. Run the server on port 5000.', currentLanguage));
+      alert(t('Network error trying to contact backend ingestion server.', currentLanguage));
     }
     setIngesting(false);
   };
