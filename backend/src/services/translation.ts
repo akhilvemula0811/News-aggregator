@@ -616,33 +616,30 @@ export async function translateBatch(texts: string[], targetLanguage: string): P
   }
 
   // 3. Translate remaining items via API
-  if (!genAI) {
-    return result;
-  }
+  if (genAI) {
+    const modelsToTry = ['gemini-flash-latest', 'gemini-pro-latest'];
+    let successful = false;
 
-  const modelsToTry = ['gemini-flash-latest', 'gemini-pro-latest'];
-  let successful = false;
+    for (const modelName of modelsToTry) {
+      if (successful) break;
+      try {
+        const model = genAI.getGenerativeModel({
+          model: modelName,
+          generationConfig: {
+            responseMimeType: 'application/json',
+          },
+        });
 
-  for (const modelName of modelsToTry) {
-    if (successful) break;
-    try {
-      const model = genAI.getGenerativeModel({
-        model: modelName,
-        generationConfig: {
-          responseMimeType: 'application/json',
-        },
-      });
+        const chunkSize = 50;
+        const chunks = [];
+        for (let i = 0; i < toTranslate.length; i += chunkSize) {
+          chunks.push(toTranslate.slice(i, i + chunkSize));
+        }
 
-      const chunkSize = 50;
-      const chunks = [];
-      for (let i = 0; i < toTranslate.length; i += chunkSize) {
-        chunks.push(toTranslate.slice(i, i + chunkSize));
-      }
-
-      await Promise.all(
-        chunks.map(async (chunk) => {
-          try {
-            const prompt = `You are the high-fidelity Indian language translation engine "AI4Bharat IndicTrans2". Translate the following list of English texts into ${targetLanguageName} properly and accurately.
+        await Promise.all(
+          chunks.map(async (chunk) => {
+            try {
+              const prompt = `You are the high-fidelity Indian language translation engine "AI4Bharat IndicTrans2". Translate the following list of English texts into ${targetLanguageName} properly and accurately.
 Ensure that technical terms and proper nouns are handled with state-of-the-art accuracy, matching the style and quality of IndicTrans2.
 Keep formatting, spacing, and numbers intact.
 
@@ -654,35 +651,36 @@ Return the output as a JSON object matching this schema:
 Texts to translate:
 ${JSON.stringify(chunk.map(c => c.text), null, 2)}`;
 
-            const response = await model.generateContent(prompt);
-            const jsonText = response.response.text();
-            const cleanJson = jsonText.replace(/```json|```/g, '').trim();
-            const parsed = JSON.parse(cleanJson);
-            const translations = parsed.translations as string[];
+              const response = await model.generateContent(prompt);
+              const jsonText = response.response.text();
+              const cleanJson = jsonText.replace(/```json|```/g, '').trim();
+              const parsed = JSON.parse(cleanJson);
+              const translations = parsed.translations as string[];
 
-            if (translations && translations.length === chunk.length) {
-              for (let j = 0; j < chunk.length; j++) {
-                const item = chunk[j];
-                const translated = translations[j];
-                result[item.index] = translated;
-                
-                const cacheKey = `trans:${langCode}:${Buffer.from(item.text).toString('base64').slice(0, 100)}`;
-                try {
-                  await cache.set(cacheKey, translated, 86400); // Cache for 24h
-                } catch (e) {
-                  // ignore cache set error
+              if (translations && translations.length === chunk.length) {
+                for (let j = 0; j < chunk.length; j++) {
+                  const item = chunk[j];
+                  const translated = translations[j];
+                  result[item.index] = translated;
+                  
+                  const cacheKey = `trans:${langCode}:${Buffer.from(item.text).toString('base64').slice(0, 100)}`;
+                  try {
+                    await cache.set(cacheKey, translated, 86400); // Cache for 24h
+                  } catch (e) {
+                    // ignore cache set error
+                  }
                 }
               }
+            } catch (chunkErr: any) {
+              console.error(`[Translation] Failed to translate chunk using ${modelName}:`, chunkErr.message);
             }
-          } catch (chunkErr: any) {
-            console.error(`[Translation] Failed to translate chunk using ${modelName}:`, chunkErr.message);
-          }
-        })
-      );
-      successful = true;
-      console.log(`[Translation] Successfully translated batch using model ${modelName} in parallel chunks`);
-    } catch (error: any) {
-      console.warn(`[Translation] Model ${modelName} failed for ${targetLanguageName}:`, error.message);
+          })
+        );
+        successful = true;
+        console.log(`[Translation] Successfully translated batch using model ${modelName} in parallel chunks`);
+      } catch (error: any) {
+        console.warn(`[Translation] Model ${modelName} failed for ${targetLanguageName}:`, error.message);
+      }
     }
   }
 
