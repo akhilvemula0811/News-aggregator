@@ -2,6 +2,8 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+RUN apk add --no-cache openssl libc6-compat
+
 # Copy root configurations (necessary due to the 'file:..' link in subpackages)
 COPY package.json package-lock.json ./
 COPY backend/package*.json ./backend/
@@ -23,6 +25,8 @@ RUN npm run build --prefix backend
 # Stage 2: Production Run
 FROM node:20-alpine
 WORKDIR /app
+
+RUN apk add --no-cache openssl libc6-compat
 
 # Copy package files
 COPY package.json package-lock.json ./
