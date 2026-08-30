@@ -625,7 +625,7 @@ export async function translateBatch(texts: string[], targetLanguage: string): P
   }
 
   // 3. Translate remaining items via API
-  if (genAI && langCode !== 'en') {
+  if (genAI) {
     const modelsToTry = ['gemini-flash-latest', 'gemini-pro-latest'];
     let successful = false;
 
@@ -648,7 +648,21 @@ export async function translateBatch(texts: string[], targetLanguage: string): P
         await Promise.all(
           chunks.map(async (chunk) => {
             try {
-               const prompt = `You are the high-fidelity Indian language translation engine "AI4Bharat IndicTrans2". Translate the following list of English texts into ${targetLanguageName} properly and accurately.
+              let prompt = '';
+              if (langCode === 'en') {
+                prompt = `You are a high-fidelity translation engine. Translate the following list of regional Indian language texts (Kannada, Telugu, Marathi, Hindi, etc.) into English properly and accurately.
+Ensure that the translation is natural, readable, and matches standard English news publication style.
+Keep formatting, spacing, and numbers intact.
+
+Return the output as a JSON object matching this schema:
+{
+  "translations": ["string"]
+}
+
+Texts to translate:
+${JSON.stringify(chunk.map(c => c.text), null, 2)}`;
+              } else {
+                prompt = `You are the high-fidelity Indian language translation engine "AI4Bharat IndicTrans2". Translate the following list of English texts into ${targetLanguageName} properly and accurately.
 Ensure that technical terms and proper nouns are handled with state-of-the-art accuracy, matching the style and quality of IndicTrans2.
 Keep formatting, spacing, and numbers intact.
 
@@ -659,6 +673,7 @@ Return the output as a JSON object matching this schema:
 
 Texts to translate:
 ${JSON.stringify(chunk.map(c => c.text), null, 2)}`;
+              }
 
               const response = await model.generateContent(prompt);
               const jsonText = response.response.text();
