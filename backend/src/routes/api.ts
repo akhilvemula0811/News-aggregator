@@ -35,10 +35,32 @@ router.get('/debug-db', async (req: Request, res: Response) => {
       };
     }));
 
+    const sampleUnclustered = await prisma.article.findMany({
+      where: { storyId: null },
+      take: 10,
+      select: {
+        title: true,
+        publishedAt: true,
+        source: {
+          select: { name: true }
+        }
+      }
+    });
+
+    const cutoffDate = new Date();
+    cutoffDate.setHours(cutoffDate.getHours() - 36);
+
     return res.json({
       articlesCount,
       storiesCount,
       unclusteredCount,
+      cutoffDate: cutoffDate.toISOString(),
+      sampleUnclustered: sampleUnclustered.map((a: any) => ({
+        title: a.title,
+        source: a.source?.name,
+        publishedAt: a.publishedAt.toISOString(),
+        isFreshEnough: a.publishedAt >= cutoffDate
+      })),
       sources: sourcesDetails
     });
   } catch (err: any) {
