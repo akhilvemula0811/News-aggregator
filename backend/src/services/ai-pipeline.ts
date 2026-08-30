@@ -691,14 +691,6 @@ Return your analysis in valid JSON matching this schema:
         title = title.charAt(0).toUpperCase() + title.slice(1);
       }
 
-      if (hasNonAscii(title) || hasNonAscii(cluster[0].description || '')) {
-        const cat = classification.primaryCategory || 'General';
-        const channelName = cluster[0].sourceName || cluster[0].source?.name || '';
-        const stateName = CHANNEL_TO_STATE[channelName] || 'Maharashtra';
-        const articleIndex = getStringHash(cluster[0].title);
-        title = generateDynamicFallbackTitle(stateName, cat, articleIndex);
-        cleanSummary = generateDynamicFallbackSummary(stateName, cat, title, articleIndex);
-      }
 
       return {
         title,

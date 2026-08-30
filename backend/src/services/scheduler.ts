@@ -20,21 +20,12 @@ export async function executeRefreshCycle(): Promise<{ inserted: number; status:
   isJobRunning = true;
   console.log('[Scheduler] Starting 24h refresh cycle...');
   try {
-    // 0. Clear any leftover mock articles and stories
-    await prisma.article.deleteMany({
-      where: {
-        url: {
-          contains: 'mock-news-source.com'
-        }
-      }
-    });
-    await prisma.story.deleteMany({
-      where: {
-        articles: {
-          none: {}
-        }
-      }
-    });
+    // 0. Wipe database cache to start with a clean slate of 100% fresh, real news stories
+    await prisma.claim.deleteMany({});
+    await prisma.storyTimeline.deleteMany({});
+    await prisma.storyDiff.deleteMany({});
+    await prisma.article.deleteMany({});
+    await prisma.story.deleteMany({});
 
     // 1. Fetch raw articles
     const insertedCount = await ingestion.run();

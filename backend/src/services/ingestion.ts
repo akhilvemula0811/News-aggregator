@@ -737,8 +737,7 @@ export class IngestionService {
       });
 
       if (regArticles.length === 0) {
-        console.log(`[Ingestion] Feed for ${regSource.name} (${regSource.state}) empty/failed. Generating mock regional articles...`);
-        regArticles = this.generateMockArticles(regSource.name, regSource.state);
+        console.warn(`[Ingestion] Feed for ${regSource.name} (${regSource.state}) empty/failed. Skipping.`);
       }
       allArticles = [...allArticles, ...regArticles];
     }
