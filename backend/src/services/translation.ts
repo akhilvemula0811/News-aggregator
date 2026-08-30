@@ -609,7 +609,7 @@ export async function translateBatch(texts: string[], targetLanguage: string): P
       const cacheKey = `trans:${langCode}:${Buffer.from(text).toString('base64').slice(0, 100)}`;
       try {
         const cached = await cache.get<string>(cacheKey);
-        if (cached) {
+        if (cached && cached !== text) {
           result[i] = cached;
         } else {
           toTranslate.push({ text, index: i });
