@@ -8,6 +8,10 @@ dotenv.config();
 const apiKey = process.env.GEMINI_API_KEY || '';
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
+function hasNonAscii(str: string): boolean {
+  return /[^\u0000-\u007F]+/.test(str);
+}
+
 const languageNames: Record<string, string> = {
   hi: 'Hindi',
   te: 'Telugu',
@@ -576,7 +580,7 @@ function localTranslate(text: string, langCode: string): string | null {
 
 export async function translateBatch(texts: string[], targetLanguage: string): Promise<string[]> {
   if (!texts || texts.length === 0) return [];
-  if (!targetLanguage || targetLanguage.toLowerCase() === 'en') {
+  if (!targetLanguage) {
     return texts;
   }
 
@@ -589,6 +593,11 @@ export async function translateBatch(texts: string[], targetLanguage: string): P
   for (let i = 0; i < texts.length; i++) {
     const text = texts[i];
     if (text && text.trim()) {
+      // If translating to English, only translate if the text contains non-ASCII characters
+      if (langCode === 'en' && !hasNonAscii(text)) {
+        continue;
+      }
+
       // 1. Try local template fallback translation first (instant and keyless)
       const locallyTranslated = localTranslate(text, langCode);
       if (locallyTranslated) {
@@ -616,7 +625,7 @@ export async function translateBatch(texts: string[], targetLanguage: string): P
   }
 
   // 3. Translate remaining items via API
-  if (genAI) {
+  if (genAI && langCode !== 'en') {
     const modelsToTry = ['gemini-flash-latest', 'gemini-pro-latest'];
     let successful = false;
 
@@ -639,7 +648,7 @@ export async function translateBatch(texts: string[], targetLanguage: string): P
         await Promise.all(
           chunks.map(async (chunk) => {
             try {
-              const prompt = `You are the high-fidelity Indian language translation engine "AI4Bharat IndicTrans2". Translate the following list of English texts into ${targetLanguageName} properly and accurately.
+               const prompt = `You are the high-fidelity Indian language translation engine "AI4Bharat IndicTrans2". Translate the following list of English texts into ${targetLanguageName} properly and accurately.
 Ensure that technical terms and proper nouns are handled with state-of-the-art accuracy, matching the style and quality of IndicTrans2.
 Keep formatting, spacing, and numbers intact.
 
@@ -687,10 +696,51 @@ ${JSON.stringify(chunk.map(c => c.text), null, 2)}`;
   // 4. Fallback to Google Translate client API for any items that failed or if Gemini wasn't run
   const remainingToTranslate = toTranslate.filter(item => result[item.index] === texts[item.index]);
   if (remainingToTranslate.length > 0) {
-    console.log(`[Translation] Using Google Translate API for ${remainingToTranslate.length} remaining items`);
-    try {
-      await Promise.all(
-        remainingToTranslate.map(async (item) => {
+    console.log(`[Translation] Using Batch Google Translate API for ${remainingToTranslate.length} remaining items`);
+    const chunkSize = 20;
+    for (let i = 0; i < remainingToTranslate.length; i += chunkSize) {
+      const chunk = remainingToTranslate.slice(i, i + chunkSize);
+      const combinedText = chunk.map(c => c.text).join(' \n***\n ');
+      
+      try {
+        const apiLangCode = langCode === 'mni' ? 'mni-Mtei' : langCode;
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${apiLangCode}&dt=t&q=${encodeURIComponent(combinedText)}`;
+        const response = await axios.get(url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+          },
+          timeout: 10000
+        });
+
+        if (response.data && response.data[0]) {
+          const translatedCombined = response.data[0]
+            .map((segment: any) => segment[0])
+            .join('');
+            
+          if (translatedCombined) {
+            const parts = translatedCombined.split('***');
+            for (let j = 0; j < chunk.length; j++) {
+              const item = chunk[j];
+              const translatedPart = (parts[j] || '').trim();
+              if (translatedPart) {
+                result[item.index] = translatedPart;
+                
+                // Cache result
+                const cacheKey = `trans:${langCode}:${Buffer.from(item.text).toString('base64').slice(0, 100)}`;
+                try {
+                  await cache.set(cacheKey, translatedPart, 86400); // Cache for 24h
+                } catch (e) {
+                  // ignore cache error
+                }
+              }
+            }
+          }
+        }
+      } catch (googleTransErr: any) {
+        console.error(`[Translation] Batch Google Translate fallback failed for chunk starting at ${i}:`, googleTransErr.message);
+        
+        // Individual fallback in case the batch chunk fails
+        for (const item of chunk) {
           try {
             const apiLangCode = langCode === 'mni' ? 'mni-Mtei' : langCode;
             const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${apiLangCode}&dt=t&q=${encodeURIComponent(item.text)}`;
@@ -701,28 +751,16 @@ ${JSON.stringify(chunk.map(c => c.text), null, 2)}`;
               timeout: 6000
             });
             if (response.data && response.data[0]) {
-              const translated = response.data[0]
-                .map((segment: any) => segment[0])
-                .join('');
+              const translated = response.data[0].map((s: any) => s[0]).join('');
               if (translated) {
                 result[item.index] = translated;
-                
-                // Cache result
-                const cacheKey = `trans:${langCode}:${Buffer.from(item.text).toString('base64').slice(0, 100)}`;
-                try {
-                  await cache.set(cacheKey, translated, 86400); // Cache for 24h
-                } catch (e) {
-                  // ignore cache set error
-                }
               }
             }
-          } catch (googleTransErr: any) {
-            console.error(`[Translation] Google Translate fallback failed for text:`, item.text, googleTransErr.message);
+          } catch (individualErr: any) {
+            console.error(`[Translation] Individual fallback failed for text:`, item.text, individualErr.message);
           }
-        })
-      );
-    } catch (err: any) {
-      console.error(`[Translation] Google Translate batch fallback failed:`, err.message);
+        }
+      }
     }
   }
 

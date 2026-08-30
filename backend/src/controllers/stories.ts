@@ -433,7 +433,7 @@ export class StoriesController {
             // Sort by importance and slice to 20
             results = sortStoriesByImportance(results).slice(0, 20);
 
-            if (targetLang && targetLang !== 'en') {
+            if (targetLang) {
               const textsToTranslate: string[] = [];
               results.forEach(story => {
                 textsToTranslate.push(story.title);
@@ -608,7 +608,7 @@ export class StoriesController {
         : results;
 
       // Apply dynamic Gemini translation if regional language is selected
-      if (targetLang && targetLang !== 'en') {
+      if (targetLang) {
         const textsToTranslate: string[] = [];
         paginatedResults.forEach(story => {
           textsToTranslate.push(story.title);
