@@ -466,7 +466,17 @@ export class AiPipelineService {
       const model = genAI!.getGenerativeModel({ model: 'text-embedding-004' });
       // Truncate text if it's too long
       const truncatedText = text.slice(0, 4000);
-      const result = await model.embedContent(truncatedText);
+
+      // Enforce a 1.5s timeout to trigger fast fallback mode on rate limit blocks
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Gemini API call timed out')), 1500)
+      );
+
+      const result = await Promise.race([
+        model.embedContent(truncatedText),
+        timeoutPromise
+      ]) as any;
+
       return result.embedding.values;
     } catch (error: any) {
       console.error('[AI Pipeline] Error generating embedding:', error.message);
