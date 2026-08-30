@@ -70,4 +70,29 @@ router.post('/admin/ingest', async (req: Request, res: Response) => {
   });
 });
 
+router.post('/admin/ingest-sync', async (req: Request, res: Response) => {
+  const adminSecret = process.env.ADMIN_SECRET;
+  const receivedSecret = req.headers['x-admin-secret'];
+
+  if (!adminSecret || receivedSecret !== adminSecret) {
+    return res.status(401).json({ error: 'Unauthorized. Invalid admin secret.' });
+  }
+
+  console.log('[Admin API] Manual ingestion trigger received. Starting synchronous worker...');
+
+  try {
+    const result = await executeRefreshCycle();
+    return res.json({
+      message: 'Ingestion and processing completed successfully.',
+      result
+    });
+  } catch (error: any) {
+    console.error('[Admin API] Synchronous manual ingestion failed:', error.message);
+    return res.status(500).json({
+      error: 'Ingestion failed.',
+      message: error.message
+    });
+  }
+});
+
 export default router;
