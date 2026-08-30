@@ -11,10 +11,10 @@ router.get('/debug-translation', async (req: Request, res: Response) => {
   const { text, lang } = req.query;
   try {
     const apiLangCode = (lang as string || 'en').toLowerCase();
-    const url = `https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=auto&tl=${apiLangCode}&q=${encodeURIComponent(text as string)}`;
+    const url = `https://translate.google.com/translate_a/single?client=at&sl=auto&tl=${apiLangCode}&dt=t&q=${encodeURIComponent(text as string)}`;
     const response = await axios.get(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        'User-Agent': 'AndroidTranslate/5.3.0.RC02.130751341 (Linux; U; Android 6.0; redmi 3s)'
       },
       timeout: 10000
     });
