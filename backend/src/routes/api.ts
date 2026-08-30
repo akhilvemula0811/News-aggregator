@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { storiesController } from '../controllers/stories';
 import { executeRefreshCycle } from '../services/scheduler';
+import { prisma } from '../config/db';
 
 const router = Router();
 
@@ -24,7 +25,7 @@ router.get('/debug-db', async (req: Request, res: Response) => {
       articlesCount,
       storiesCount,
       unclusteredCount,
-      sources: sources.map(s => ({
+      sources: sources.map((s: any) => ({
         name: s.name,
         category: s.category,
         count: s._count.articles
