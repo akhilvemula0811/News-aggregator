@@ -584,8 +584,8 @@ export class AiPipelineService {
    * Query LLM to summarize, classify, and extract claims from a cluster of articles
    */
   async analyzeCluster(cluster: any[]): Promise<ClusterResult> {
-    if (!this.checkGenAI() || this.analysisApiFailed) {
-      // Mock cluster processing response
+    if (cluster.length === 1 || !this.checkGenAI() || this.analysisApiFailed) {
+      // Mock/Fast cluster processing response for single source articles or API fail fallbacks
       let title = cluster[0].title.split(' - ')[0] || 'Aggregated News Story';
       if (title.length > 0) {
         title = title.charAt(0).toUpperCase() + title.slice(1);
