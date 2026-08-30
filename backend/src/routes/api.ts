@@ -5,6 +5,47 @@ import { prisma } from '../config/db';
 
 const router = Router();
 
+router.get('/debug-db', async (req: Request, res: Response) => {
+  try {
+    const articlesCount = await prisma.article.count();
+    const storiesCount = await prisma.story.count();
+    const unclusteredCount = await prisma.article.count({
+      where: { storyId: null }
+    });
+    const sources = await prisma.source.findMany({
+      include: {
+        _count: {
+          select: { articles: true }
+        }
+      }
+    });
+
+    const sourcesDetails = await Promise.all(sources.map(async (s: any) => {
+      const clustered = await prisma.article.count({
+        where: {
+          sourceId: s.id,
+          storyId: { not: null }
+        }
+      });
+      return {
+        name: s.name,
+        category: s.category,
+        totalArticles: s._count.articles,
+        clusteredArticles: clustered
+      };
+    }));
+
+    return res.json({
+      articlesCount,
+      storiesCount,
+      unclusteredCount,
+      sources: sourcesDetails
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // Debug Endpoint for Database Diagnostics (Removed for production)
 
 // Public User Endpoints
