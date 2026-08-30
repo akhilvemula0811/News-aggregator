@@ -1,8 +1,19 @@
 import { Router, Request, Response } from 'express';
 import { storiesController } from '../controllers/stories';
 import { executeRefreshCycle } from '../services/scheduler';
+import { translateBatch } from '../services/translation';
 
 const router = Router();
+
+router.get('/debug-translation', async (req: Request, res: Response) => {
+  const { text, lang } = req.query;
+  try {
+    const result = await translateBatch([text as string], lang as string);
+    return res.json({ success: true, original: text, lang, translated: result[0] });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 // Public User Endpoints
 router.get('/stories', (req, res) => storiesController.getStories(req, res));
