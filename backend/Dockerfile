@@ -45,5 +45,5 @@ COPY --from=builder /app/backend/scripts ./backend/scripts
 EXPOSE 5000
 ENV NODE_ENV=production
 
-# Run database setup and start server
-CMD ["sh", "-c", "npm run db:push --prefix backend && npm start --prefix backend"]
+# Run database setup, clear mocks, and start server
+CMD ["sh", "-c", "node backend/scripts/clear-mocks.js && npm run db:push --prefix backend && npm start --prefix backend"]
