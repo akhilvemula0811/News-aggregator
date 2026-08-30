@@ -1,41 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { storiesController } from '../controllers/stories';
 import { executeRefreshCycle } from '../services/scheduler';
-import { translateBatch } from '../services/translation';
-
-import axios from 'axios';
 
 const router = Router();
-
-router.get('/debug-translation', async (req: Request, res: Response) => {
-  const { text, lang } = req.query;
-  try {
-    const apiLangCode = (lang as string || 'en').toLowerCase();
-    const url = `https://translate.google.com/translate_a/single?client=at&sl=auto&tl=${apiLangCode}&dt=t&q=${encodeURIComponent(text as string)}`;
-    const response = await axios.get(url, {
-      headers: {
-        'User-Agent': 'AndroidTranslate/5.3.0.RC02.130751341 (Linux; U; Android 6.0; redmi 3s)'
-      },
-      timeout: 10000
-    });
-    return res.json({
-      success: true,
-      original: text,
-      lang: apiLangCode,
-      status: response.status,
-      data: response.data
-    });
-  } catch (error: any) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-      response: error.response ? {
-        status: error.response.status,
-        data: error.response.data
-      } : null
-    });
-  }
-});
 
 // Public User Endpoints
 router.get('/stories', (req, res) => storiesController.getStories(req, res));
