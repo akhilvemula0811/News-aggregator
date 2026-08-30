@@ -742,10 +742,23 @@ export class IngestionService {
       allArticles = [...allArticles, ...regArticles];
     }
 
-    console.log(`[Ingestion] Ingested ${allArticles.length} raw articles. Storing & deduplicating...`);
+    console.log(`[Ingestion] Ingested ${allArticles.length} raw articles. Filtering for fresh content (last 3 days)...`);
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - 3);
+
+    const freshArticles = allArticles.filter(art => {
+      try {
+        const pubDate = new Date(art.publishedAt);
+        return pubDate >= cutoffDate;
+      } catch (e) {
+        return false;
+      }
+    });
+
+    console.log(`[Ingestion] Found ${freshArticles.length} fresh articles. Storing & deduplicating...`);
     let insertCount = 0;
 
-    for (const art of allArticles) {
+    for (const art of freshArticles) {
       try {
         // Find or create Source in the database
         let dbSource = await prisma.source.findFirst({
