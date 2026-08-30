@@ -4,6 +4,37 @@ import { executeRefreshCycle } from '../services/scheduler';
 
 const router = Router();
 
+// Debug Endpoint for Database Diagnostics
+router.get('/debug-db', async (req: Request, res: Response) => {
+  try {
+    const articlesCount = await prisma.article.count();
+    const storiesCount = await prisma.story.count();
+    const unclusteredCount = await prisma.article.count({
+      where: { storyId: null }
+    });
+    const sources = await prisma.source.findMany({
+      include: {
+        _count: {
+          select: { articles: true }
+        }
+      }
+    });
+
+    return res.json({
+      articlesCount,
+      storiesCount,
+      unclusteredCount,
+      sources: sources.map(s => ({
+        name: s.name,
+        category: s.category,
+        count: s._count.articles
+      }))
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // Public User Endpoints
 router.get('/stories', (req, res) => storiesController.getStories(req, res));
 router.get('/stories/:id', (req, res) => storiesController.getStoryDetails(req, res));
