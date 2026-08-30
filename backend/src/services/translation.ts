@@ -711,7 +711,7 @@ ${JSON.stringify(chunk.map(c => c.text), null, 2)}`;
   // 4. Fallback to Google Translate client API for any items that failed or if Gemini wasn't run
   const remainingToTranslate = toTranslate.filter(item => result[item.index] === texts[item.index]);
   if (remainingToTranslate.length > 0) {
-    console.log(`[Translation] Using Batch Google Translate API for ${remainingToTranslate.length} remaining items`);
+    console.log(`[Translation] Using Batch Google Translate API (Chrome Extension Endpoint) for ${remainingToTranslate.length} remaining items`);
     const chunkSize = 20;
     for (let i = 0; i < remainingToTranslate.length; i += chunkSize) {
       const chunk = remainingToTranslate.slice(i, i + chunkSize);
@@ -719,7 +719,7 @@ ${JSON.stringify(chunk.map(c => c.text), null, 2)}`;
       
       try {
         const apiLangCode = langCode === 'mni' ? 'mni-Mtei' : langCode;
-        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${apiLangCode}&dt=t&q=${encodeURIComponent(combinedText)}`;
+        const url = `https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=auto&tl=${apiLangCode}&q=${encodeURIComponent(combinedText)}`;
         const response = await axios.get(url, {
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
@@ -728,9 +728,9 @@ ${JSON.stringify(chunk.map(c => c.text), null, 2)}`;
         });
 
         if (response.data && response.data[0]) {
-          const translatedCombined = response.data[0]
-            .map((segment: any) => segment[0])
-            .join('');
+          const translatedCombined = typeof response.data[0] === 'string'
+            ? response.data[0]
+            : (response.data[0][0] || '');
             
           if (translatedCombined) {
             const parts = translatedCombined.split('***');
@@ -758,7 +758,7 @@ ${JSON.stringify(chunk.map(c => c.text), null, 2)}`;
         for (const item of chunk) {
           try {
             const apiLangCode = langCode === 'mni' ? 'mni-Mtei' : langCode;
-            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${apiLangCode}&dt=t&q=${encodeURIComponent(item.text)}`;
+            const url = `https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=auto&tl=${apiLangCode}&q=${encodeURIComponent(item.text)}`;
             const response = await axios.get(url, {
               headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
@@ -766,7 +766,9 @@ ${JSON.stringify(chunk.map(c => c.text), null, 2)}`;
               timeout: 6000
             });
             if (response.data && response.data[0]) {
-              const translated = response.data[0].map((s: any) => s[0]).join('');
+              const translated = typeof response.data[0] === 'string'
+                ? response.data[0]
+                : (response.data[0][0] || '');
               if (translated) {
                 result[item.index] = translated;
               }
