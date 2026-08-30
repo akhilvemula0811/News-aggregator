@@ -189,26 +189,26 @@ export const RSS_SOURCES = [
 ];
 
 export const REGIONAL_RSS_SOURCES = [
-  { name: 'ABP Majha', state: 'Maharashtra', url: 'https://marathi.abplive.com/feed', sourceUrl: 'https://marathi.abplive.com' },
-  { name: 'NDTV', state: 'Delhi', url: 'https://feeds.feedburner.com/ndtvindianews', sourceUrl: 'https://www.ndtv.com' },
-  { name: 'TV9 Kannada', state: 'Karnataka', url: 'https://kannada.tv9kannada.com/feed', sourceUrl: 'https://tv9kannada.com' },
-  { name: 'Sun News', state: 'Tamil Nadu', url: 'https://www.sunnews.in/feed', sourceUrl: 'https://www.sunnews.in' },
+  { name: 'ABP Majha', state: 'Maharashtra', url: 'https://marathi.abplive.com/home/feed', sourceUrl: 'https://marathi.abplive.com' },
+  { name: 'NDTV', state: 'Delhi', url: 'https://feeds.feedburner.com/ndtvnews-top-stories', sourceUrl: 'https://www.ndtv.com' },
+  { name: 'TV9 Kannada', state: 'Karnataka', url: 'https://tv9kannada.com/feed/', sourceUrl: 'https://tv9kannada.com' },
+  { name: 'Oneindia Tamil', state: 'Tamil Nadu', url: 'https://tamil.oneindia.com/rss/feeds/oneindia-tamil-fb.xml', sourceUrl: 'https://tamil.oneindia.com' },
   { name: 'TV9 Telugu', state: 'Andhra Pradesh', url: 'https://tv9telugu.com/feed', sourceUrl: 'https://tv9telugu.com' },
   { name: 'V6 News', state: 'Telangana', url: 'https://www.v6velugu.com/feed', sourceUrl: 'https://www.v6velugu.com' },
-  { name: 'ABP Ganga', state: 'Uttar Pradesh', url: 'https://up.abplive.com/feed', sourceUrl: 'https://up.abplive.com' },
-  { name: 'ABP Ananda', state: 'West Bengal', url: 'https://bengali.abplive.com/feed', sourceUrl: 'https://bengali.abplive.com' },
-  { name: 'Asianet News', state: 'Kerala', url: 'https://malayalam.asianetnews.com/feed', sourceUrl: 'https://malayalam.asianetnews.com' },
+  { name: 'Amar Ujala Uttar Pradesh', state: 'Uttar Pradesh', url: 'https://www.amarujala.com/rss/uttar-pradesh.xml', sourceUrl: 'https://www.amarujala.com' },
+  { name: 'ABP Ananda', state: 'West Bengal', url: 'https://bengali.abplive.com/home/feed', sourceUrl: 'https://bengali.abplive.com' },
+  { name: 'Asianet News', state: 'Kerala', url: 'https://www.asianetnews.com/rss', sourceUrl: 'https://www.asianetnews.com' },
   { name: 'TV9 Gujarati', state: 'Gujarat', url: 'https://tv9gujarati.com/feed', sourceUrl: 'https://tv9gujarati.com' },
-  { name: 'News18 Rajasthan', state: 'Rajasthan', url: 'https://hindi.news18.com/rss/rajasthan.xml', sourceUrl: 'https://hindi.news18.com' },
-  { name: 'PTC News', state: 'Punjab', url: 'https://www.ptcnews.tv/feed', sourceUrl: 'https://www.ptcnews.tv' },
-  { name: 'Haryana News', state: 'Haryana', url: 'https://haryana.news18.com/rss/haryana.xml', sourceUrl: 'https://hindi.news18.com' },
-  { name: 'News18 Bihar/Jharkhand', state: 'Bihar', url: 'https://hindi.news18.com/rss/bihar.xml', sourceUrl: 'https://hindi.news18.com' },
+  { name: 'Amar Ujala Rajasthan', state: 'Rajasthan', url: 'https://www.amarujala.com/rss/rajasthan.xml', sourceUrl: 'https://www.amarujala.com' },
+  { name: 'Amar Ujala Punjab', state: 'Punjab', url: 'https://www.amarujala.com/rss/punjab.xml', sourceUrl: 'https://www.amarujala.com' },
+  { name: 'Amar Ujala Haryana', state: 'Haryana', url: 'https://www.amarujala.com/rss/haryana.xml', sourceUrl: 'https://www.amarujala.com' },
+  { name: 'Amar Ujala Bihar', state: 'Bihar', url: 'https://www.amarujala.com/rss/bihar.xml', sourceUrl: 'https://www.amarujala.com' },
   { name: 'IBC24', state: 'Madhya Pradesh', url: 'https://www.ibc24.in/feed', sourceUrl: 'https://www.ibc24.in' },
   { name: 'Arunachal Today', state: 'Arunachal Pradesh', url: 'https://arunachaltoday.in/feed', sourceUrl: 'https://arunachaltoday.in' },
   { name: 'News Live', state: 'Assam', url: 'https://newslive.com/feed', sourceUrl: 'https://newslive.com' },
   { name: 'IBC24', state: 'Chhattisgarh', url: 'https://www.ibc24.in/feed', sourceUrl: 'https://www.ibc24.in' },
   { name: 'Prudent Media', state: 'Goa', url: 'https://www.prudentmedia.in/feed', sourceUrl: 'https://www.prudentmedia.in' },
-  { name: 'Divya Himachal TV', state: 'Himachal Pradesh', url: 'https://www.divyahimachal.com/feed', sourceUrl: 'https://www.divyahimachal.com' },
+  { name: 'Amar Ujala Himachal Pradesh', state: 'Himachal Pradesh', url: 'https://www.amarujala.com/rss/himachal-pradesh.xml', sourceUrl: 'https://www.amarujala.com' },
   { name: 'Zee Bihar Jharkhand', state: 'Jharkhand', url: 'https://zeehar.com/feed', sourceUrl: 'https://zeehar.com' },
   { name: 'Impact TV', state: 'Manipur', url: 'https://www.impacttv.in/feed', sourceUrl: 'https://www.impacttv.in' },
   { name: 'Batesi TV', state: 'Meghalaya', url: 'https://batesitv.com/feed', sourceUrl: 'https://batesitv.com' },
@@ -217,7 +217,7 @@ export const REGIONAL_RSS_SOURCES = [
   { name: 'OTV (Odisha TV)', state: 'Odisha', url: 'https://odishatv.in/feed', sourceUrl: 'https://odishatv.in' },
   { name: 'Sikkim Chronicle', state: 'Sikkim', url: 'https://sikkimchronicle.com/feed', sourceUrl: 'https://sikkimchronicle.com' },
   { name: 'Headlines Tripura', state: 'Tripura', url: 'https://headlinestripura.com/feed', sourceUrl: 'https://headlinestripura.com' },
-  { name: 'Zee Uttar Pradesh Uttarakhand', state: 'Uttarakhand', url: 'https://zeeuttar.com/feed', sourceUrl: 'https://zeeuttar.com' }
+  { name: 'Amar Ujala Uttarakhand', state: 'Uttarakhand', url: 'https://www.amarujala.com/rss/uttarakhand.xml', sourceUrl: 'https://www.amarujala.com' }
 ];
 
 const INGEST_STATE_CITIES: Record<string, string[]> = {
@@ -340,7 +340,14 @@ export class IngestionService {
   async fetchRSSFeed(source: typeof RSS_SOURCES[0]): Promise<IngestedArticle[]> {
     try {
       console.log(`[Ingestion] Fetching RSS feed: ${source.name}...`);
-      const feed = await parser.parseURL(source.url);
+      const response = await axios.get(source.url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'application/rss+xml, application/xml, text/xml, */*'
+        },
+        timeout: 10000
+      });
+      const feed = await parser.parseString(response.data);
       
       return feed.items.map((item) => {
         // Extract image URL from enclosure or media content if available

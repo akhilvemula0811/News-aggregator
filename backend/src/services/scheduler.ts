@@ -1,6 +1,7 @@
 import cron from 'node-cron';
 import { ingestion } from './ingestion';
 import { aiPipeline } from './ai-pipeline';
+import { prisma } from '../config/db';
 
 let isJobRunning = false;
 
@@ -19,6 +20,22 @@ export async function executeRefreshCycle(): Promise<{ inserted: number; status:
   isJobRunning = true;
   console.log('[Scheduler] Starting 24h refresh cycle...');
   try {
+    // 0. Clear any leftover mock articles and stories
+    await prisma.article.deleteMany({
+      where: {
+        url: {
+          contains: 'mock-news-source.com'
+        }
+      }
+    });
+    await prisma.story.deleteMany({
+      where: {
+        articles: {
+          none: {}
+        }
+      }
+    });
+
     // 1. Fetch raw articles
     const insertedCount = await ingestion.run();
 

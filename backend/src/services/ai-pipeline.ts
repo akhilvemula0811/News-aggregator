@@ -25,22 +25,22 @@ const CHANNEL_TO_STATE: Record<string, string> = {
   'ABP Majha': 'Maharashtra',
   'NDTV': 'Delhi',
   'TV9 Kannada': 'Karnataka',
-  'Sun News': 'Tamil Nadu',
+  'Oneindia Tamil': 'Tamil Nadu',
   'TV9 Telugu': 'Andhra Pradesh',
   'V6 News': 'Telangana',
-  'ABP Ganga': 'Uttar Pradesh',
+  'Amar Ujala Uttar Pradesh': 'Uttar Pradesh',
   'ABP Ananda': 'West Bengal',
   'Asianet News': 'Kerala',
   'TV9 Gujarati': 'Gujarat',
-  'News18 Rajasthan': 'Rajasthan',
-  'PTC News': 'Punjab',
-  'Haryana News': 'Haryana',
-  'News18 Bihar/Jharkhand': 'Bihar',
+  'Amar Ujala Rajasthan': 'Rajasthan',
+  'Amar Ujala Punjab': 'Punjab',
+  'Amar Ujala Haryana': 'Haryana',
+  'Amar Ujala Bihar': 'Bihar',
   'IBC24': 'Madhya Pradesh',
   'Arunachal Today': 'Arunachal Pradesh',
   'News Live': 'Assam',
   'Prudent Media': 'Goa',
-  'Divya Himachal TV': 'Himachal Pradesh',
+  'Amar Ujala Himachal Pradesh': 'Himachal Pradesh',
   'Zee Bihar Jharkhand': 'Jharkhand',
   'Impact TV': 'Manipur',
   'Batesi TV': 'Meghalaya',
@@ -50,7 +50,7 @@ const CHANNEL_TO_STATE: Record<string, string> = {
   'OTV': 'Odisha',
   'Sikkim Chronicle': 'Sikkim',
   'Headlines Tripura': 'Tripura',
-  'Zee Uttar Pradesh Uttarakhand': 'Uttarakhand'
+  'Amar Ujala Uttarakhand': 'Uttarakhand'
 };
 
 function getArticleState(art: any): string | null {
