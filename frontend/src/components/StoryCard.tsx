@@ -42,6 +42,13 @@ export default function StoryCard({ story, isBookmarkedInitially = false }: Prop
     minute: '2-digit',
   });
 
+  const [imageError, setImageError] = useState(false);
+
+  const cleanImageUrl = (url: string | null) => {
+    if (!url) return null;
+    return url.replace(/&amp;/g, '&');
+  };
+
   const detailUrl = `/story/${story.id}${currentLanguage ? `?language=${currentLanguage}` : ''}`;
 
   return (
@@ -52,12 +59,21 @@ export default function StoryCard({ story, isBookmarkedInitially = false }: Prop
       {/* Left Column: Image (Optional) */}
       {story.imageUrl && (
         <div className="w-full sm:w-52 md:w-64 h-48 sm:h-full shrink-0 rounded-xl overflow-hidden bg-muted-light relative">
-          <img 
-            src={story.imageUrl} 
-            alt={story.title} 
-            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-            loading="lazy"
-          />
+          {!imageError ? (
+            <img 
+              src={cleanImageUrl(story.imageUrl) || undefined} 
+              alt={story.title} 
+              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 dark:from-indigo-950/40 dark:via-purple-950/40 dark:to-pink-950/40 border-r border-border/20 flex items-center justify-center select-none">
+              <span className="text-[10px] font-bold text-muted uppercase tracking-wider bg-card/60 backdrop-blur-md px-2.5 py-1 rounded-lg border border-border/50 shadow-sm">
+                {t(story.primaryCategory, currentLanguage)}
+              </span>
+            </div>
+          )}
         </div>
       )}
 

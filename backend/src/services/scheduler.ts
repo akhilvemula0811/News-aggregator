@@ -1,4 +1,5 @@
 import cron from 'node-cron';
+import axios from 'axios';
 import { ingestion } from './ingestion';
 import { aiPipeline } from './ai-pipeline';
 import { prisma } from '../config/db';
@@ -47,6 +48,36 @@ export async function executeRefreshCycle(): Promise<{ inserted: number; status:
 }
 
 /**
+ * Start periodic self-pinging to prevent server sleeping.
+ */
+function startSelfPing() {
+  const backendUrl = process.env.BACKEND_URL;
+  if (!backendUrl) {
+    console.log('[Scheduler] BACKEND_URL not set. Self-ping keep-alive is disabled.');
+    return;
+  }
+
+  const targetUrl = `${backendUrl.replace(/\/$/, '')}/health`;
+  const intervalMs = parseInt(process.env.SELF_PING_INTERVAL || '600000', 10);
+  console.log(`[Scheduler] Starting self-ping interval: ${intervalMs}ms targeting ${targetUrl}`);
+
+  // Perform an immediate first ping on startup after a small delay
+  setTimeout(pingServer, 5000);
+
+  setInterval(pingServer, intervalMs);
+
+  async function pingServer() {
+    try {
+      console.log(`[Scheduler] Pinging health endpoint: ${targetUrl}...`);
+      const response = await axios.get(targetUrl);
+      console.log(`[Scheduler] Self-ping successful. Status: ${response.status}`);
+    } catch (error: any) {
+      console.warn('[Scheduler] Self-ping keep-alive failed:', error.message);
+    }
+  }
+}
+
+/**
  * Initialize background cron schedules
  */
 export function initScheduler() {
@@ -67,4 +98,7 @@ export function initScheduler() {
   });
 
   console.log('[Scheduler] Daily cron set for 05:00 AM Asia/Kolkata (IST).');
+
+  // Start self-pinging loop
+  startSelfPing();
 }

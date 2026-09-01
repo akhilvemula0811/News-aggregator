@@ -65,7 +65,7 @@ function SavedArticlesContent() {
           <p className="text-xs md:text-sm text-muted leading-relaxed max-w-xl">
             {activeTab === 'saved'
               ? t('Your saved Bookmark stories and News Articles. Also available in offline mode.', currentLanguage)
-              : t("Rewatch your Articles and stories you've clicked and read during this session.\n NOTE: This list will clear automatically when you refresh the page.", currentLanguage)}
+              : t("Rewatch your Articles and stories you've clicked and read during this session. NOTE: This list will clear automatically when you refresh the page.", currentLanguage)}
           </p>
         </div>
 

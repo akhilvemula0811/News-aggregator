@@ -526,7 +526,18 @@ export class AiPipelineService {
           continue; // Mismatched states, do not cluster together
         }
 
-        const sim = this.cosineSimilarity(article.embedding, cluster.centroid);
+        // Check exact or high word overlap in title
+        const wordsA = new Set(article.title.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter((w: string) => w.length > 2));
+        const wordsC = new Set(cluster.items[0].title.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter((w: string) => w.length > 2));
+        let overlap = 0;
+        if (wordsA.size > 0 && wordsC.size > 0) {
+          const inter = [...wordsA].filter(w => wordsC.has(w)).length;
+          const union = new Set([...wordsA, ...wordsC]).size;
+          overlap = inter / union;
+        }
+
+        const cosineSim = this.cosineSimilarity(article.embedding, cluster.centroid);
+        const sim = overlap >= 0.5 ? Math.max(cosineSim, 0.95) : cosineSim;
         if (sim > bestSim) {
           bestSim = sim;
           bestCluster = cluster;
@@ -569,6 +580,19 @@ export class AiPipelineService {
   }
 
   cleanFallbackSummary(description: string | null, content: string | null, title: string): string {
+    // If content is available and substantial, extract rich paragraphs
+    if (content && content.length > 120) {
+      let text = content.replace(/<[^>]*>/g, '').trim();
+      const paras = text.split('\n\n').filter(p => p.trim().length > 40);
+      if (paras.length >= 2) {
+        return paras.slice(0, 3).join('\n\n');
+      }
+      if (text.length > 500) {
+        return text.slice(0, 500) + '...';
+      }
+      return text;
+    }
+
     let text = description || content || '';
     
     // Clean Hacker News style URL block
@@ -580,12 +604,12 @@ export class AiPipelineService {
     text = text.replace(/<[^>]*>/g, '').trim();
     
     if (!text || text === 'Summary unavailable.') {
-      return `Reported news about "${title}".`;
+      return `Comprehensive regional coverage on "${title}".`;
     }
     
-    // Cut down to 250 characters if too long
-    if (text.length > 250) {
-      return text.slice(0, 250) + '...';
+    // Cut down to 350 characters if too long
+    if (text.length > 350) {
+      return text.slice(0, 350) + '...';
     }
     return text;
   }
@@ -595,8 +619,21 @@ export class AiPipelineService {
    */
   async analyzeCluster(cluster: any[]): Promise<ClusterResult> {
     if (cluster.length === 1 || !this.checkGenAI() || this.analysisApiFailed) {
-      // Mock/Fast cluster processing response for single source articles or API fail fallbacks
-      let title = cluster[0].title.split(' - ')[0] || 'Aggregated News Story';
+      // Fast cluster processing response for single source articles or API fail fallbacks
+      let rawTitle = cluster[0].title || '';
+      let title = rawTitle.split(/\s+[-|–—]\s+/)[0]?.trim() || '';
+      if (title.length < 8 && rawTitle.length >= 8) {
+        title = rawTitle.trim();
+      }
+      if (!title || title.length < 8) {
+        const firstSentence = (cluster[0].description || cluster[0].content || '').split(/[.!?\n]/)[0]?.trim();
+        if (firstSentence && firstSentence.length > 15) {
+          title = firstSentence.slice(0, 100);
+        } else {
+          const cat = cluster[0].source?.category || 'News';
+          title = `${cat} Update: ${cluster[0].source?.name || 'Regional Report'}`;
+        }
+      }
       if (title.length > 0) {
         title = title.charAt(0).toUpperCase() + title.slice(1);
       }
@@ -827,9 +864,9 @@ Return your response in valid JSON matching this schema:
   async run(): Promise<void> {
     console.log('[AI Pipeline] Running AI clustering & processing pipeline...');
 
-    // 1. Fetch all raw articles ingested in the last 36 hours that are not yet clustered into a story
+    // 1. Fetch all raw articles ingested that are not yet clustered into a story
     const cutoffDate = new Date();
-    cutoffDate.setHours(cutoffDate.getHours() - 36);
+    cutoffDate.setHours(cutoffDate.getHours() - 72);
 
     const unclusteredArticles = await prisma.article.findMany({
       where: {
@@ -941,15 +978,39 @@ Return your response in valid JSON matching this schema:
             });
           }
 
-          console.log(`[AI Pipeline] Updated developing story "${matchedStory.title}" with ${cluster.length} new articles.`);
         } else {
           // NEW STORY PATH
           const analysis = await this.analyzeCluster(cluster);
 
-          // Double check if there are disputed claims or if rating is disputed
           let finalCredibility = analysis.credibilityScore;
           if (analysis.disputedClaims && analysis.disputedClaims.length > 0) {
             finalCredibility = 'DISPUTED';
+          }
+
+          // Check if an existing story with identical or high-similarity title exists
+          const cleanTitleNorm = analysis.title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 40);
+          const activeStories = await prisma.story.findMany({
+            where: {
+              createdAt: {
+                gte: cutoffDate
+              }
+            },
+            select: { id: true, title: true }
+          });
+          const existingMatch = activeStories.find(s => {
+            const sNorm = s.title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 40);
+            return cleanTitleNorm.length > 15 && sNorm.length > 15 && (cleanTitleNorm === sNorm || cleanTitleNorm.includes(sNorm) || sNorm.includes(cleanTitleNorm));
+          });
+
+          if (existingMatch) {
+            console.log(`[AI Pipeline] Merging duplicate cluster "${analysis.title}" into existing story "${existingMatch.title}" (ID: ${existingMatch.id})`);
+            for (const art of cluster) {
+              await prisma.article.update({
+                where: { id: art.id },
+                data: { storyId: existingMatch.id },
+              });
+            }
+            continue;
           }
 
           // Create the Story

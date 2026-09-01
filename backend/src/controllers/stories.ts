@@ -37,35 +37,36 @@ const STATE_CITY_KEYWORDS: Record<string, string[]> = {
 };
 
 const STATE_TO_CHANNELS: Record<string, string[]> = {
-  'Maharashtra': ['ABP Majha'],
-  'Delhi': ['NDTV'],
-  'Karnataka': ['TV9 Kannada'],
-  'Tamil Nadu': ['Oneindia Tamil'],
-  'Andhra Pradesh': ['TV9 Telugu'],
-  'Telangana': ['V6 News'],
-  'Uttar Pradesh': ['Amar Ujala Uttar Pradesh'],
-  'West Bengal': ['ABP Ananda'],
-  'Kerala': ['Asianet News'],
-  'Gujarat': ['TV9 Gujarati'],
-  'Rajasthan': ['Amar Ujala Rajasthan'],
-  'Punjab': ['Amar Ujala Punjab'],
-  'Haryana': ['Amar Ujala Haryana'],
-  'Bihar': ['Amar Ujala Bihar'],
-  'Madhya Pradesh': ['IBC24'],
-  'Arunachal Pradesh': ['Arunachal Today'],
-  'Assam': ['News Live'],
-  'Chhattisgarh': ['IBC24'],
-  'Goa': ['Prudent Media'],
-  'Himachal Pradesh': ['Amar Ujala Himachal Pradesh'],
-  'Jharkhand': ['Zee Bihar Jharkhand'],
-  'Manipur': ['Impact TV'],
-  'Meghalaya': ['Batesi TV'],
-  'Mizoram': ['Zonet Cable TV'],
-  'Nagaland': ['Hornbill TV'],
-  'Odisha': ['OTV (Odisha TV)', 'OTV'],
-  'Sikkim': ['Sikkim Chronicle'],
-  'Tripura': ['Headlines Tripura'],
-  'Uttarakhand': ['Amar Ujala Uttarakhand']
+  'National Coverage': ['Times of India - Top Stories', 'Times of India - India', 'The Hindu', 'NDTV'],
+  'Maharashtra': ['ABP Majha Maharashtra', 'ABP Majha', 'Lokmat Maharashtra'],
+  'Delhi': ['NDTV Delhi', 'NDTV', 'Hindustan Times Delhi'],
+  'Karnataka': ['TV9 Kannada Karnataka', 'TV9 Kannada', 'Prajavani Karnataka'],
+  'Tamil Nadu': ['Oneindia Tamil', 'Dinamalar Tamil Nadu', 'Polimer News'],
+  'Andhra Pradesh': ['Eenadu AP', 'Sakshi AP', 'TV9 Telugu AP', 'TV9 Telugu'],
+  'Telangana': ['V6 News Telangana', 'V6 News', 'Namasthe Telangana', 'Telangana Today'],
+  'Uttar Pradesh': ['Amar Ujala Uttar Pradesh', 'Dainik Jagran UP', 'Hindustan UP'],
+  'West Bengal': ['ABP Ananda West Bengal', 'ABP Ananda', 'Sangbad Pratidin'],
+  'Kerala': ['Asianet News Kerala', 'Asianet News', 'Mathrubhumi Kerala'],
+  'Gujarat': ['Gujarat Samachar', 'Divya Bhaskar Gujarat', 'Sandesh Gujarat', 'TV9 Gujarati'],
+  'Rajasthan': ['Rajasthan Patrika', 'Amar Ujala Rajasthan', 'Dainik Bhaskar Rajasthan'],
+  'Punjab': ['PTC News Punjab', 'The Tribune Punjab', 'Amar Ujala Punjab'],
+  'Haryana': ['Dainik Jagran Haryana', 'Amar Ujala Haryana', 'The Tribune Haryana'],
+  'Bihar': ['Prabhat Khabar Bihar', 'Dainik Jagran Bihar', 'Amar Ujala Bihar'],
+  'Madhya Pradesh': ['Dainik Bhaskar MP', 'NaiDunia MP', 'IBC24 Madhya Pradesh'],
+  'Arunachal Pradesh': ['Arunachal Today', 'Arunachal Times', 'Echo of Arunachal'],
+  'Assam': ['News Live Assam', 'News Live', 'Pratidin Time Assam'],
+  'Chhattisgarh': ['IBC24 Chhattisgarh', 'Haribhoomi Chhattisgarh', 'Patrika CG'],
+  'Goa': ['Prudent Media Goa', 'Prudent Media', 'O Heraldo Goa'],
+  'Himachal Pradesh': ['Divya Himachal', 'Amar Ujala Himachal Pradesh'],
+  'Jharkhand': ['Prabhat Khabar Jharkhand', 'Dainik Bhaskar Jharkhand', 'Zee Bihar Jharkhand'],
+  'Manipur': ['Impact TV Manipur', 'Impact TV', 'Imphal Free Press'],
+  'Meghalaya': ['Shillong Times', 'Batesi TV', 'Meghalaya Monitor'],
+  'Mizoram': ['Zonet Mizoram', 'Zonet Cable TV', 'Mizoram Post'],
+  'Nagaland': ['Hornbill TV Nagaland', 'Hornbill TV', 'Nagaland Post'],
+  'Odisha': ['OTV (Odisha TV)', 'OTV', 'Sambad Odisha'],
+  'Sikkim': ['Sikkim Chronicle', 'Sikkim Express', 'Voice of Sikkim'],
+  'Tripura': ['Headlines Tripura', 'Tripura Times', 'Syandan Patrika'],
+  'Uttarakhand': ['Amar Ujala Uttarakhand', 'Dainik Jagran Uttarakhand']
 };
 
 async function scrapeFullContent(url: string): Promise<string | null> {
@@ -341,6 +342,55 @@ function sortStoriesByImportance(stories: any[]): any[] {
   });
 }
 
+const THEMATIC_IMAGES: Record<string, string[]> = {
+  'Stocks/Business': [
+    'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=80'
+  ],
+  'Technology': [
+    'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&auto=format&fit=crop&q=80'
+  ],
+  'AI & Tech Deep Dives': [
+    'https://images.unsplash.com/photo-1677442136019-21780efad99a?w=800&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80'
+  ],
+  'Politics': [
+    'https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=800&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=800&auto=format&fit=crop&q=80'
+  ],
+  'Science': [
+    'https://images.unsplash.com/photo-1507668077129-56e32842fceb?w=800&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=800&auto=format&fit=crop&q=80'
+  ],
+  'Sports': [
+    'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&auto=format&fit=crop&q=80'
+  ],
+  'National News': [
+    'https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=800&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800&auto=format&fit=crop&q=80'
+  ],
+  'Local + Regional Pulse': [
+    'https://images.unsplash.com/photo-1544717305-2782549b5136?w=800&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=800&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1541417901776-4f8903ef106f?w=800&auto=format&fit=crop&q=80'
+  ]
+};
+
+function getProperStoryImage(story: any): string {
+  if (story.articles && story.articles.length > 0) {
+    const existing = story.articles.find((a: any) => a.urlToImage && typeof a.urlToImage === 'string' && a.urlToImage.startsWith('http'))?.urlToImage;
+    if (existing) return existing;
+  }
+  const cat = story.primaryCategory || 'Local + Regional Pulse';
+  const pool = THEMATIC_IMAGES[cat] || THEMATIC_IMAGES['Local + Regional Pulse'];
+  const hash = ((story.id || '') + (story.title || '')).split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+  return pool[Math.abs(hash) % pool.length];
+}
+
 export class StoriesController {
   /**
    * GET /api/stories
@@ -354,7 +404,7 @@ export class StoriesController {
       const skip = (pageNum - 1) * limitNum;
 
       const targetLang = (language as string || '').toLowerCase();
-      const cutoffTime = new Date(Date.now() - 42 * 60 * 60 * 1000);
+      const cutoffTime = new Date(Date.now() - 72 * 60 * 60 * 1000);
 
       if (grouped === 'true') {
         const categories = [
@@ -411,7 +461,7 @@ export class StoriesController {
             let results = await Promise.all(
               catStories.map(async (story) => {
                 const sources = Array.from(new Set(story.articles.map((a: any) => a.source?.name || 'Unknown')));
-                const image = story.articles.find((a: any) => a.urlToImage)?.urlToImage || null;
+                const image = getProperStoryImage(story);
                 const summary = await getOrGenerateProperSummary(story);
                 return {
                   id: story.id,
@@ -425,6 +475,7 @@ export class StoriesController {
                   updatedAt: story.updatedAt,
                   sources,
                   imageUrl: image,
+                  heroImage: image,
                   articlesCount: story.articles.length
                 };
               })
@@ -524,7 +575,7 @@ export class StoriesController {
         stories.map(async (story) => {
           // Find main representative article or list sources
           const sources = Array.from(new Set(story.articles.map((a: any) => a.source?.name || 'Unknown')));
-          const image = story.articles.find((a: any) => a.urlToImage)?.urlToImage || null;
+          const image = getProperStoryImage(story);
           const summary = await getOrGenerateProperSummary(story);
           
           return {
@@ -539,10 +590,29 @@ export class StoriesController {
             updatedAt: story.updatedAt,
             sources,
             imageUrl: image,
+            heroImage: image,
             articlesCount: story.articles.length,
           };
         })
       );
+
+      // Deduplicate stories by normalized title so identical/syndicated stories are never repeated
+      const seenTitles = new Set<string>();
+      const uniqueResults: typeof results = [];
+      for (const item of results) {
+        if (!item.title) continue;
+        const norm = item.title.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+        const shortNorm = norm.slice(0, 45);
+        if (norm && (seenTitles.has(norm) || (shortNorm.length >= 20 && seenTitles.has(shortNorm)))) {
+          continue;
+        }
+        if (norm) {
+          seenTitles.add(norm);
+          if (shortNorm.length >= 20) seenTitles.add(shortNorm);
+        }
+        uniqueResults.push(item);
+      }
+      results = uniqueResults;
 
       if (isRegionalPulse) {
         results = sortStoriesByImportance(results);
@@ -739,11 +809,14 @@ export class StoriesController {
       }
 
       const properSummary = await getOrGenerateProperSummary(story);
+      const storyImage = getProperStoryImage(story);
 
       const result = {
         id: story.id,
         title: story.title,
         summary: properSummary,
+        imageUrl: storyImage,
+        heroImage: storyImage,
         credibilityScore: story.credibilityScore,
         primaryCategory: story.primaryCategory,
         secondaryCategory: story.secondaryCategory,

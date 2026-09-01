@@ -19,6 +19,7 @@ function StoryDetailContent() {
   const [loading, setLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     async function loadStory() {
@@ -87,7 +88,12 @@ function StoryDetailContent() {
     );
   }
 
-  const imageUrl = story.articles.find(a => a.urlToImage)?.urlToImage || null;
+  const cleanImageUrl = (url: string | null) => {
+    if (!url) return null;
+    return url.replace(/&amp;/g, '&');
+  };
+
+  const imageUrl = (story as any).imageUrl || (story as any).heroImage || story.articles.find(a => a.urlToImage)?.urlToImage || null;
 
   return (
     <div className="space-y-8 pt-4 md:pt-6 pb-10">
@@ -154,11 +160,20 @@ function StoryDetailContent() {
       {/* Story Hero Image (if exists) */}
       {imageUrl && (
         <div className="w-full aspect-video md:max-h-[420px] rounded-2xl overflow-hidden bg-muted-light relative shadow-sm">
-          <img
-            src={imageUrl}
-            alt={story.title}
-            className="object-cover w-full h-full"
-          />
+          {!imageError ? (
+            <img
+              src={cleanImageUrl(imageUrl) || undefined}
+              alt={story.title}
+              className="object-cover w-full h-full"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 dark:from-indigo-950/30 dark:via-purple-950/30 dark:to-pink-950/30 border border-border/40 flex items-center justify-center select-none shadow-sm">
+              <span className="text-xs font-bold text-muted uppercase tracking-wider bg-card/65 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-border/50 shadow-sm">
+                {t(story.primaryCategory, currentLanguage)}
+              </span>
+            </div>
+          )}
         </div>
       )}
 

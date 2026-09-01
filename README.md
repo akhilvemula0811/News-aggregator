@@ -2,6 +2,10 @@
 
 A production-ready, mobile-responsive fullstack news aggregation application with an AI-driven classification, summarization, dispute flagging, and personalized recommendation pipeline.
 
+🌐 **Live Backend Deployment**: [https://ai-news-backend-4s4i.onrender.com](https://ai-news-backend-4s4i.onrender.com)  
+📡 **Live API Base URL**: [https://ai-news-backend-4s4i.onrender.com/api](https://ai-news-backend-4s4i.onrender.com/api)  
+💚 **Health Check**: [https://ai-news-backend-4s4i.onrender.com/health](https://ai-news-backend-4s4i.onrender.com/health)
+
 ---
 
 ## 🌟 Key Features
@@ -215,11 +219,11 @@ Deploying the frontend Next.js app to Vercel is extremely straightforward:
    - Set **Framework Preset**: `Next.js`.
    - Set **Root Directory**: `frontend` (Important: do not deploy from the workspace root).
    - In the **Environment Variables** section, add:
-     - `NEXT_PUBLIC_API_URL`: The URL of your deployed Render backend (e.g. `https://ai-news-backend.onrender.com/api`).
+     - `NEXT_PUBLIC_API_URL`: The URL of your deployed Render backend (e.g. `https://ai-news-backend-4s4i.onrender.com/api`).
 5. Click **Deploy**. Vercel will build, optimize, and serve your frontend.
 
 > [!TIP]
 > **Cron Scheduler in Serverless/Free Tiers**:
 > If deploying the backend to serverless functions or container environments that sleep when idle (like Render free tier), the in-memory `node-cron` schedule will not trigger consistently.
 > To ensure the 24h news refresh runs reliably, set up an external HTTP cron trigger (e.g. using Vercel Cron, GitHub Actions schedules, or Cron-Job.org) targeting:
-> `POST https://your-backend-domain.com/api/admin/ingest` with the header `x-admin-secret` matching your configured `ADMIN_SECRET`.
+> `POST https://ai-news-backend-4s4i.onrender.com/api/admin/ingest` with the header `x-admin-secret` matching your configured `ADMIN_SECRET`.
