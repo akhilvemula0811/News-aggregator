@@ -1,11 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { storiesController } from '../controllers/stories';
 import { executeRefreshCycle } from '../services/scheduler';
+import { importSeedData } from '../services/seed-importer';
 import { prisma } from '../config/db';
 
 const router = Router();
-
-// Debug Endpoint for Database Diagnostics (Removed for production)
 
 // Public User Endpoints
 router.get('/stories', (req, res) => storiesController.getStories(req, res));
@@ -39,6 +38,20 @@ router.post('/admin/ingest', async (req: Request, res: Response) => {
     message: 'Ingestion and processing started in the background.',
     status: 'processing'
   });
+});
+
+// Admin Seed & Sync Endpoint
+router.post('/admin/sync-seed', async (req: Request, res: Response) => {
+  const adminSecret = process.env.ADMIN_SECRET;
+  const receivedSecret = req.headers['x-admin-secret'];
+
+  if (adminSecret && receivedSecret && receivedSecret !== adminSecret) {
+    return res.status(401).json({ error: 'Unauthorized. Invalid admin secret.' });
+  }
+
+  console.log('[Admin API] Database sync-seed requested...');
+  const result = await importSeedData();
+  return res.status(result.success ? 200 : 500).json(result);
 });
 
 export default router;
