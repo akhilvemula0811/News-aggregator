@@ -565,7 +565,9 @@ export class IngestionService {
       });
       const feed = await parser.parseString(response.data);
       
-      return feed.items.map((item) => {
+      const articles: IngestedArticle[] = [];
+      
+      for (const item of feed.items) {
         // Extract image URL from enclosure or media content if available
         let imageUrl: string | null = null;
         if (item.enclosure) {
@@ -623,23 +625,25 @@ export class IngestionService {
         const cleanDesc = cleanHtmlText(item.summary || item.contentSnippet || null);
         const cleanBody = cleanHtmlText(item.content || null);
 
-        if (isNoiseOrJunkArticle(cleanTitle, cleanDesc, cleanBody)) {
-          return null;
+        if (isNoiseOrJunkArticle(cleanTitle, cleanDesc, cleanBody) || !item.link || cleanTitle.length <= 5) {
+          continue;
         }
 
-        return {
+        articles.push({
           title: cleanTitle,
           description: cleanDesc,
           content: cleanBody,
-          url: item.link || '',
+          url: item.link,
           urlToImage: imageUrl,
           publishedAt: new Date(item.pubDate || item.isoDate || Date.now()),
           author: item.creator || (item as any).author || null,
           sourceName: source.name,
           sourceUrl: source.sourceUrl,
           category: source.category,
-        };
-      }).filter((art): art is IngestedArticle => art !== null && !!art.url && art.title.length > 5);
+        });
+      }
+
+      return articles;
     } catch (error: any) {
       console.error(`[Ingestion] Error parsing RSS feed ${source.name}:`, error.message);
       return [];
