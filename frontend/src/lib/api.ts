@@ -1,6 +1,14 @@
 import { Story, StoryDetails, UserProfile } from '../types/api';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000/api';
+export function getApiBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return 'https://ai-news-backend-4s4i.onrender.com/api';
+  }
+  return 'http://127.0.0.1:5000/api';
+}
 
 /**
  * Safely generate or retrieve an anonymous device ID for tracking personalization
@@ -30,7 +38,7 @@ export async function fetchStories(params: {
   limit?: number;
 }): Promise<{ stories: Story[]; pagination: { total: number; page: number; limit: number; totalPages: number } }> {
   try {
-    const url = new URL(`${API_BASE_URL}/stories`);
+    const url = new URL(`${getApiBaseUrl()}/stories`);
     const deviceId = getDeviceId();
     
     if (deviceId && deviceId !== 'server_environment') {
@@ -62,7 +70,7 @@ export async function fetchGroupedStories(params: {
   language?: string;
 }): Promise<{ stories: Record<string, Story[]> }> {
   try {
-    const url = new URL(`${API_BASE_URL}/stories`);
+    const url = new URL(`${getApiBaseUrl()}/stories`);
     url.searchParams.append('grouped', 'true');
     const deviceId = getDeviceId();
     
@@ -88,7 +96,7 @@ export async function fetchGroupedStories(params: {
  */
 export async function fetchStoryDetails(id: string, language?: string): Promise<StoryDetails | null> {
   try {
-    const url = new URL(`${API_BASE_URL}/stories/${id}`);
+    const url = new URL(`${getApiBaseUrl()}/stories/${id}`);
     if (language) {
       url.searchParams.append('language', language);
     }
@@ -111,7 +119,7 @@ export async function logEngagement(storyId: string): Promise<void> {
     const deviceId = getDeviceId();
     if (!deviceId || deviceId === 'server_environment') return;
 
-    await fetch(`${API_BASE_URL}/stories/${storyId}/engagement`, {
+    await fetch(`${getApiBaseUrl()}/stories/${storyId}/engagement`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -131,7 +139,7 @@ export async function toggleBookmark(storyId: string): Promise<boolean> {
     const deviceId = getDeviceId();
     if (!deviceId || deviceId === 'server_environment') return false;
 
-    const res = await fetch(`${API_BASE_URL}/stories/${storyId}/bookmark`, {
+    const res = await fetch(`${getApiBaseUrl()}/stories/${storyId}/bookmark`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -159,7 +167,7 @@ export async function fetchPersonalization(language?: string): Promise<UserProfi
       return { interests: {}, savedStories: [] };
     }
 
-    const url = new URL(`${API_BASE_URL}/personalization`);
+    const url = new URL(`${getApiBaseUrl()}/personalization`);
     url.searchParams.append('deviceId', deviceId);
     if (language) {
       url.searchParams.append('language', language);
