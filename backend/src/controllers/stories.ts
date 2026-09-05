@@ -404,7 +404,6 @@ export class StoriesController {
       const skip = (pageNum - 1) * limitNum;
 
       const targetLang = (language as string || '').toLowerCase();
-      const cutoffTime = new Date(Date.now() - 72 * 60 * 60 * 1000);
 
       if (grouped === 'true') {
         const categories = [
@@ -437,10 +436,7 @@ export class StoriesController {
         await Promise.all(
           categories.map(async (cat) => {
             const catWhere: any = {
-              primaryCategory: cat,
-              createdAt: {
-                gte: cutoffTime
-              }
+              primaryCategory: cat
             };
 
             const catStories = await prisma.story.findMany({
@@ -513,11 +509,7 @@ export class StoriesController {
       }
 
       // Build database query filters
-      const where: any = {
-        createdAt: {
-          gte: cutoffTime
-        }
-      };
+      const where: any = {};
 
       if (category) {
         where.primaryCategory = category as string;
@@ -531,16 +523,37 @@ export class StoriesController {
       }
 
       // Regional pulse filtration
-      // If a state is provided, filter stories that contain articles from corresponding states.
+      // If a state is provided, filter stories that contain articles from corresponding states or regional keywords
       if (state && !category) {
         const channels = STATE_TO_CHANNELS[state as string] || [];
-        where.articles = {
-          some: {
-            source: {
-              name: { in: channels }
+        const stateKeywords = STATE_CITY_KEYWORDS[state as string] || (state === 'National Coverage' ? [] : [state as string]);
+
+        const orConditions: any[] = [];
+        if (channels.length > 0) {
+          orConditions.push({
+            articles: {
+              some: {
+                source: {
+                  name: { in: channels }
+                }
+              }
             }
-          },
-        };
+          });
+        }
+
+        if (state === 'National Coverage') {
+          orConditions.push({ primaryCategory: 'National News' });
+          orConditions.push({ primaryCategory: 'Local + Regional Pulse' });
+        } else if (stateKeywords.length > 0) {
+          stateKeywords.forEach(kw => {
+            orConditions.push({ title: { contains: kw } });
+            orConditions.push({ summary: { contains: kw } });
+          });
+        }
+
+        if (orConditions.length > 0) {
+          where.OR = orConditions;
+        }
       }
 
       // Only apply personalization on the general home feed (no category/search/state filters)

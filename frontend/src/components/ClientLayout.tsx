@@ -246,30 +246,6 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
   };
 
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
-  const [ingesting, setIngesting] = useState(false);
-
-  const handleManualIngest = async () => {
-    setIngesting(true);
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000/api';
-    const adminSecret = process.env.NEXT_PUBLIC_ADMIN_SECRET || 'super_secret_admin_token_123';
-    try {
-      const res = await fetch(`${apiBase}/admin/ingest`, {
-        method: 'POST',
-        headers: {
-          'x-admin-secret': adminSecret
-        }
-      });
-      if (res.ok) {
-        alert(t('Ingestion triggered successfully! Feed is updating...', currentLanguage));
-        window.location.reload();
-      } else {
-        alert(t('Ingestion trigger failed. Check your API endpoint and admin secret configuration.', currentLanguage));
-      }
-    } catch (err) {
-      alert(t('Network error trying to contact backend ingestion server.', currentLanguage));
-    }
-    setIngesting(false);
-  };
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -369,23 +345,8 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        {/* Run Ingestion Action */}
-        <div className="mt-auto mb-4 pt-4 border-t border-border">
-
-          <button
-            onClick={handleManualIngest}
-            disabled={ingesting}
-            className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-muted-light hover:bg-border/60 disabled:opacity-50 text-foreground rounded-xl text-xs font-semibold border border-border transition cursor-pointer"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-3.5 h-3.5 ${ingesting ? 'animate-spin' : ''}`}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-            </svg>
-            {ingesting ? t('Ingesting...', currentLanguage) : t('Run Ingestion', currentLanguage)}
-          </button>
-        </div>
-
         {/* Footer */}
-        <div className="pt-4 border-t border-border text-[11px] text-muted">
+        <div className="mt-auto pt-4 border-t border-border text-[11px] text-muted">
           <p>© 2026 AI News Pulse.</p>
           <p className="mt-1">Daily News & AI processed stories.</p>
         </div>

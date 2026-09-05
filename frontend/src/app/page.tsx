@@ -68,6 +68,7 @@ function FeedContent() {
   // Filter states
   const [stories, setStories] = useState<Story[]>([]);
   const [groupedStories, setGroupedStories] = useState<Record<string, Story[]>>({});
+  const [orderedCategories, setOrderedCategories] = useState<string[]>([]);
   const [savedStoryIds, setSavedStoryIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [triggerCount, setTriggerCount] = useState(0);
@@ -112,8 +113,53 @@ function FeedContent() {
           language: selectedLanguage,
         });
         if (data && data.stories) {
-          setGroupedStories(data.stories);
+          // Identify categories with stories that are configured for display
+          const activeCats = Object.keys(CATEGORY_DISPLAY_MAP).filter(
+            cat => data.stories[cat] && data.stories[cat].length > 0
+          );
+
+          if (activeCats.length > 0) {
+            // Read and advance session refresh count so every refresh showcases a new category first
+            let refreshCount = 0;
+            try {
+              const currentCountStr = sessionStorage.getItem('ai_news_home_refresh_idx');
+              refreshCount = currentCountStr ? parseInt(currentCountStr, 10) : 0;
+              sessionStorage.setItem('ai_news_home_refresh_idx', String(refreshCount + 1));
+            } catch {
+              refreshCount = Math.floor(Math.random() * activeCats.length);
+            }
+
+            // Guaranteed rotation: top category rotates on every refresh
+            const topCatIndex = refreshCount % activeCats.length;
+            const topCategory = activeCats[topCatIndex];
+            const otherCategories = activeCats.filter((_, idx) => idx !== topCatIndex);
+
+            // Dynamically shuffle the remaining categories so the rest of the feed is also fresh
+            for (let i = otherCategories.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [otherCategories[i], otherCategories[j]] = [otherCategories[j], otherCategories[i]];
+            }
+
+            const newOrderedCats = [topCategory, ...otherCategories];
+            setOrderedCategories(newOrderedCats);
+
+            // Refresh & randomize the present stories within each category
+            const refreshedGrouped: Record<string, Story[]> = {};
+            for (const cat of activeCats) {
+              const list = [...(data.stories[cat] || [])];
+              for (let i = list.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [list[i], list[j]] = [list[j], list[i]];
+              }
+              refreshedGrouped[cat] = list;
+            }
+            setGroupedStories(refreshedGrouped);
+          } else {
+            setOrderedCategories([]);
+            setGroupedStories({});
+          }
         } else {
+          setOrderedCategories([]);
           setGroupedStories({});
         }
       } else {
@@ -142,29 +188,10 @@ function FeedContent() {
       params.set('category', category);
     } else {
       params.delete('category');
+      // When resetting to All News, trigger refresh count rotation
+      setTriggerCount(prev => prev + 1);
     }
     router.push(`/?${params.toString()}`);
-  };
-
-  const handleManualIngest = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('http://127.0.0.1:5000/api/admin/ingest', {
-        method: 'POST',
-        headers: {
-          'x-admin-secret': 'super_secret_admin_token_123'
-        }
-      });
-      if (res.ok) {
-        alert('Ingestion triggered successfully! Feed is updating...');
-        setTriggerCount(prev => prev + 1);
-      } else {
-        alert('Ingestion trigger failed. Make sure Express server is running locally on port 5000.');
-      }
-    } catch (err) {
-      alert('Network error trying to contact backend ingestion server. Run the server on port 5000.');
-    }
-    setLoading(false);
   };
 
   return (
@@ -209,7 +236,7 @@ function FeedContent() {
           </div>
         ) : selectedCategory === '' && !searchQuery ? (
           /* Portal Grouped Layout */
-          Object.keys(groupedStories).every(cat => !groupedStories[cat] || groupedStories[cat].length === 0) ? (
+          orderedCategories.length === 0 ? (
             /* Empty State */
             <div className="text-center py-16 border border-dashed border-border rounded-2xl bg-card/40 space-y-4">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-muted mx-auto">
@@ -224,11 +251,11 @@ function FeedContent() {
             </div>
           ) : (
             <div className="space-y-12">
-              {Object.keys(CATEGORY_DISPLAY_MAP).map((cat) => {
+              {orderedCategories.map((cat) => {
                 const catStories = groupedStories[cat] || [];
                 if (catStories.length === 0) return null;
 
-                const displayName = CATEGORY_DISPLAY_MAP[cat];
+                const displayName = CATEGORY_DISPLAY_MAP[cat] || cat;
 
                 return (
                   <section key={cat} className="space-y-5 border-b border-border pb-8 last:border-b-0 last:pb-0">

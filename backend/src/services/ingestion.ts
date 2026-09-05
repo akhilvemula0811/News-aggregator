@@ -1460,10 +1460,10 @@ export class IngestionService {
       stateArticlesMap[regSource.state].push(...regArticles);
     }
 
-    // Ensure every state has a curated batch of 8-10 quality fresh articles
+    // Ensure every state has a curated batch of 15-30 quality fresh articles
     for (const [state, articles] of Object.entries(stateArticlesMap)) {
-      let stateBatch = articles.slice(0, 10);
-      if (stateBatch.length < 8) {
+      let stateBatch = articles.slice(0, 30);
+      if (stateBatch.length < 15) {
         console.warn(`[Ingestion] State "${state}" has only ${stateBatch.length} scraped articles. Supplementing with rich regional news stories.`);
         const primaryChannel = REGIONAL_RSS_SOURCES.find(r => r.state === state)?.name || `${state} Regional News`;
         const mockArticles = this.generateMockArticles(primaryChannel, state);
