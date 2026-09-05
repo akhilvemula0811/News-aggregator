@@ -220,6 +220,35 @@ function FeedContent() {
           </div>
         )}
 
+        {/* Homefeed Top Bar (Live Status & Refresh Feed Action) */}
+        {selectedCategory === '' && !searchQuery && (
+          <div className="flex items-center justify-between py-1 px-1 border-b border-border/60 pb-3">
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted">
+                {t('Live News Feed', selectedLanguage)}
+              </span>
+            </div>
+
+            <button
+              onClick={() => {
+                setTriggerCount(prev => prev + 1);
+              }}
+              disabled={loading}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-foreground bg-card hover:bg-muted-light border border-border rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer disabled:opacity-50"
+              title={t('Refresh Feed', selectedLanguage)}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className={`w-3.5 h-3.5 text-primary ${loading ? 'animate-spin' : ''}`}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+              <span>{loading ? t('Refreshing...', selectedLanguage) : t('Refresh Feed', selectedLanguage)}</span>
+            </button>
+          </div>
+        )}
+
         {/* Loading view */}
         {loading ? (
           <div className="space-y-4">
